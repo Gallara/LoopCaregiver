@@ -209,8 +209,10 @@ jobs:
 
       - name: Select Xcode version
         run: "sudo xcode-select --switch /Applications/Xcode_16.3.app/Contents/Developer"
-      - name: Install watchOS Platform
-        run: xcodebuild -downloadPlatform watchOS
+      - name: Install Platforms
+        run: |
+         xcodebuild -downloadPlatform iOS
+         xcodebuild -downloadPlatform watchOS
 
       - name: Checkout Repo for syncing
         if: |
