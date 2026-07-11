@@ -25,12 +25,12 @@ jobs:
     runs-on: macos-15
     outputs:
       new_certificate_needed: ${{ steps.set_output.outputs.new_certificate_needed }}
-  
+
     steps:
       # Checks-out the repo
       - name: Checkout Repo
         uses: actions/checkout@v4
-      
+
       # Patch Fastlane Match to not print tables
       - name: Patch Match Tables
         run: |
@@ -41,15 +41,17 @@ jobs:
             echo "table_printer.rb not found"
             exit 1
           fi
-
       # Install project dependencies
+      # Update fastlane to fix the Apple API 'templateName' profile-creation error
       - name: Install Project Dependencies
-        run: bundle install
+        run: |
+          bundle install
+          bundle update fastlane
 
       # Sync the GitHub runner clock with the Windows time server (workaround as suggested in https://github.com/actions/runner/issues/2996)
       - name: Sync clock
         run: sudo sntp -sS time.windows.com
-      
+
       # Create or update Distribution certificate and provisioning profiles
       - name: Check and create or update Distribution certificate and profiles if needed
         run: |
@@ -64,7 +66,7 @@ jobs:
         run: |
           CERT_STATUS_FILE="${{ github.workspace }}/fastlane/new_certificate_needed.txt"
           ENABLE_NUKE_CERTS=${{ vars.ENABLE_NUKE_CERTS }}
-          
+
           if [ -f "$CERT_STATUS_FILE" ]; then
             CERT_STATUS=$(cat "$CERT_STATUS_FILE" | tr -d '\n' | tr -d '\r') # Read file content and strip newlines
             echo "new_certificate_needed: $CERT_STATUS"
@@ -99,8 +101,11 @@ jobs:
         - name: Checkout repository
           uses: actions/checkout@v4
 
+        # Update fastlane to fix the Apple API 'templateName' profile-creation error
         - name: Install dependencies
-          run: bundle install
+          run: |
+            bundle install
+            bundle update fastlane
 
         - name: Run Fastlane nuke_certs
           run: |
